@@ -1,0 +1,5 @@
+*.class
+.classpath
+target/classes/oso/com/LimitQuery/Query/App.class
+./.settings/
+.project
