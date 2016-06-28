@@ -15,7 +15,6 @@ public class DoRequest implements  Runnable {
 
     @Override
     public void run() {
-      
-
+    	
     }
 }
