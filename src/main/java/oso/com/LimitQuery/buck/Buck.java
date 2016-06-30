@@ -52,6 +52,6 @@ public class Buck {
         retun true;
       }
     }*/
-	http://blog.chinaunix.net/uid-26874207-id-4661792.html
-
+	//http://blog.chinaunix.net/uid-26874207-id-4661792.html
+	//http://iamzhongyong.iteye.com/blog/1742829
 }
