@@ -15,9 +15,9 @@ public class CacheUtils {
    public static <K,V> LoadingCache<K,V> cached(CacheLoader<K , V> cacheLoader ,int expireAfterWriteMin ,final HandRemovalNotificationIface<K, V> handRemoveNotifycation) {
           LoadingCache<K , V> cache = CacheBuilder
           .newBuilder()
-          .weakKeys()
-          .softValues()
-          .expireAfterWrite(expireAfterWriteMin, TimeUnit.MINUTES)        
+       /*   .weakKeys()
+          .softValues()*/
+          .expireAfterWrite(expireAfterWriteMin, TimeUnit.SECONDS)        
           .removalListener(new RemovalListener<K, V>(){
 			@Override
 			public void onRemoval(RemovalNotification<K, V> n) {

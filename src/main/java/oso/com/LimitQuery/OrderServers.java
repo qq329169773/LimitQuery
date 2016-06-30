@@ -9,6 +9,5 @@ public class OrderServers {
 
 	@MethodLimit( limitUnavailable=1000 , limitWarning = 500)
 	public void addOrder(){
-		System.out.println("add Order...");
-	}
+ 	}
 }
