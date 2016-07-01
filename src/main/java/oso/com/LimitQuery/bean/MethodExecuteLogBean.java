@@ -20,9 +20,38 @@ public class MethodExecuteLogBean {
 	private AtomicLong countExecuteSucess = new AtomicLong(0); 	//某个时间段执行成功次数
 	private AtomicLong countExeuceteLimit = new AtomicLong(0);	//某个时间段因为限流导致执行失败次数
 	private AtomicLong countExecute = new AtomicLong(0);			//某个时间段总共执行了多少次
-	private int avgTimeMethodExecute ;	//在某个时间段方法执行的时间(avg)
-	private int maxTimeMethodExecute ;	//最长执行时间
-	private int minTimeMethodExecute ;	//最短执行时间
+	private long avgTimeMethodExecute ;	//在某个时间段方法执行的时间(avg)
+	private long maxTimeMethodExecute ;	//最长执行时间
+	private long minTimeMethodExecute ;	//最短执行时间
+	private long startTime  ;
+	private long endTime ;
+	
+	
+	 
+	
+	@Override
+	public String toString() {
+ 		return "{ip:"+ip
+ 				+",hostIp:"+hostIp
+ 				+",methodSign:"+methodSign
+ 				+",countExecute:"+countExecute
+ 				+",minTimeMethodExecute:"+minTimeMethodExecute
+ 				+",maxTimeMethodExecute:"+maxTimeMethodExecute
+ 				+",totalTimeMethodExecute:"+avgTimeMethodExecute
+ 				+",countExecuteSucess:"+countExecuteSucess
+ 				+",countExecuteFailed:"+countExecuteFailed
+ 			+"}";
+	}
+	
+	public synchronized void appendMethodExecuteTime(long durationTime){
+		if(durationTime > maxTimeMethodExecute){
+			maxTimeMethodExecute = durationTime ;
+		}
+		if( durationTime < minTimeMethodExecute || minTimeMethodExecute == 0  ){
+			minTimeMethodExecute = durationTime ;
+		}
+		avgTimeMethodExecute += durationTime ;
+	}
 	public String getUri() {
 		return uri;
 	}
@@ -55,19 +84,19 @@ public class MethodExecuteLogBean {
 		this.methodSign = methodSign;
 	}
 	 
-	public int getAvgTimeMethodExecute() {
+	public long getAvgTimeMethodExecute() {
 		return avgTimeMethodExecute;
 	}
-	public void setAvgTimeMethodExecute(int avgTimeMethodExecute) {
+	public void setAvgTimeMethodExecute(long avgTimeMethodExecute) {
 		this.avgTimeMethodExecute = avgTimeMethodExecute;
 	}
-	public int getMaxTimeMethodExecute() {
+	public long getMaxTimeMethodExecute() {
 		return maxTimeMethodExecute;
 	}
 	public void setMaxTimeMethodExecute(int maxTimeMethodExecute) {
 		this.maxTimeMethodExecute = maxTimeMethodExecute;
 	}
-	public int getMinTimeMethodExecute() {
+	public long getMinTimeMethodExecute() {
 		return minTimeMethodExecute;
 	}
 	public void setMinTimeMethodExecute(int minTimeMethodExecute) {
@@ -86,7 +115,7 @@ public class MethodExecuteLogBean {
 	public AtomicLong getCountExecute() {
 		return countExecute;
 	}
-	public long addCountExecute(){
+	public synchronized  long addCountExecute(){
 		return countExecute.incrementAndGet();
 	}
 	public long addcountExecuteFailed(){
@@ -98,4 +127,22 @@ public class MethodExecuteLogBean {
 	public long addCountExeuceteLimit(){
 		return countExeuceteLimit.incrementAndGet();
 	}
+
+	public long getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
+
+	public long getEndTime() {
+		return endTime;
+	}
+
+	public void setEndTime(long endTime) {
+		this.endTime = endTime;
+	}
+
+	 
  }

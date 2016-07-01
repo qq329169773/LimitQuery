@@ -4,11 +4,13 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.util.Date;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -27,30 +29,45 @@ public class GuavaTest {
 		//rateLimiterTest();
  		 LoadingCache<Long, AtomicLong> counter =
 		        CacheBuilder.newBuilder()
+		        .ticker(new Ticker() {
+					@Override
+					public long read() {
+ 						return 0;
+					}
+				})
 		        .removalListener(new RemovalListener<Long, AtomicLong>() {
 		        	@Override
 		        	public void onRemoval(RemovalNotification<Long, AtomicLong> notification) {
 		        		System.out.println("remove key : " + notification.getKey());
 		        	}
 				})
-		                .expireAfterWrite(1, TimeUnit.SECONDS) //在1SECONDS之间调用Put方法就不会失效
-		                .build(new CacheLoader<Long, AtomicLong>() {
-		                    @Override
-		                    public AtomicLong load(Long seconds) throws Exception {
-		                        return new AtomicLong(0);
-		                    }
-		                });
-	 
- 		 counter.get(2l).incrementAndGet();
-
+                //.expireAfterWrite(1, TimeUnit.SECONDS) //afterWriter 表示的意思是在写入当前Key，之后再接下来的1S，如果没有人Put，那么就会Remove当前的KEY
+		        .expireAfterAccess(1, TimeUnit.SECONDS)
+		        .build(new CacheLoader<Long, AtomicLong>() {
+                    @Override
+                    public AtomicLong load(Long seconds) throws Exception {
+                        return new AtomicLong(0);
+                    }
+                });
+	  
+ 		 counter.put(1l, new AtomicLong(23));
+ 		 while(true){
+  	 		 TimeUnit.MILLISECONDS.sleep(900);
+ 			 if(new Random().nextInt(10) > 8){
+ 				 System.out.println("loop finish..");
+ 				 break ;
+ 			 }
+ 		 }
  		 TimeUnit.MILLISECONDS.sleep(1500);
- 		 counter.get(1l).incrementAndGet();
+ 		 System.out.println(counter.get(2l));
+ 		//counter.put(2l,new AtomicLong(12));
+ 		 /*counter.get(1l).incrementAndGet();
 
  		 System.out.println(counter.get(2l));
  
  		 System.out.println(counter.get(1l));
  		 TimeUnit.MILLISECONDS.sleep(1500);
- 		 System.out.println(counter.get(1l));
+ 		 System.out.println(counter.get(1l));*/
 
  
 		/* while(true) {
