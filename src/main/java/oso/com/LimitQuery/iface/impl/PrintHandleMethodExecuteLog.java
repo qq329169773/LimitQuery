@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import oso.com.LimitQuery.GuavaTest;
+import oso.com.LimitQuery.bean.MethodExecuteLimitBean;
 import oso.com.LimitQuery.bean.MethodExecuteLogBean;
 import oso.com.LimitQuery.exception.LimitSystemException;
 import oso.com.LimitQuery.iface.HandleMethodExecuteLogIface;
@@ -27,4 +28,16 @@ public class PrintHandleMethodExecuteLog implements HandleMethodExecuteLogIface{
 	public void handMethodExecuteLog(List<MethodExecuteLogBean> methodExecuteLogBeans) throws LimitSystemException {
  		
 	}
+
+	@Override
+	public void handMethodLimitLog(MethodExecuteLimitBean limitBean)
+			throws LimitSystemException {
+		logger.error(limitBean.toString());
+	}
+
+	@Override
+	public void handMethodLimitLog(List<MethodExecuteLimitBean> limitBeans)
+			throws LimitSystemException {
+	}
+	
 }

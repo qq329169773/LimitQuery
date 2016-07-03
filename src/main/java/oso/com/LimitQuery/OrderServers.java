@@ -14,9 +14,11 @@ public class OrderServers {
 	public void addOrder(){
 		try {
 			TimeUnit.MILLISECONDS.sleep(1000+new Random().nextInt(5000));
-		} catch (InterruptedException e) {
+ 		} catch (Exception e) {
+ 			System.out.println("exception.........");
  			e.printStackTrace();
 		}
+		 
  	}
 	@MethodLimit( limitUnavailable=1000 , limitWarning = 500)
 	public void addOrder1(){

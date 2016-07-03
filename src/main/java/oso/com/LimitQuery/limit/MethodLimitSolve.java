@@ -27,6 +27,7 @@ import com.google.common.cache.RemovalNotification;
 import oso.com.LimitQuery.bean.MethodExecuteLimitBean;
 import oso.com.LimitQuery.bean.MethodExecuteLogBean;
 import oso.com.LimitQuery.holdValue.HoldDoubleValue;
+import oso.com.LimitQuery.holdValue.HoldThirdValue;
 import oso.com.LimitQuery.iface.HandRemovalNotificationIface;
 import oso.com.LimitQuery.iface.impl.PrintHandleMethodExecuteLog;
 import oso.com.LimitQuery.utils.CacheUtils;
@@ -52,15 +53,30 @@ public class MethodLimitSolve {
 	        .build(new CacheLoader<String, MethodExecuteLogBean>() {
 	             @Override
 	             public MethodExecuteLogBean load(String seconds) throws Exception {
-	                 return createBean();
+	                 return createLogBean();
 	             }
 	        });
-
-	private static MethodExecuteLogBean createBean(){
+	public static LoadingCache<String,MethodExecuteLimitBean> methodLimitCache   =
+	         CacheBuilder.newBuilder()
+	        .build(new CacheLoader<String, MethodExecuteLimitBean>() {
+	             @Override
+	             public MethodExecuteLimitBean load(String seconds) throws Exception {
+	                 return createLimitBean();
+	             }
+	        });
+	private static MethodExecuteLogBean createLogBean(){
 		MethodExecuteLogBean logBean = new MethodExecuteLogBean();
 		firstRecodeMethodExeceute(logBean,ThreadLocalParams.get(MethodLimitContants.METHOD_SIGN).toString());
-		methodLimitLogCache.put(ThreadLocalParams.get(MethodLimitContants.METHOD_TIME_KEY).toString(), logBean);
+		methodLimitLogCache.put(ThreadLocalParams.get(MethodLimitContants.METHOD_LOG_TIME_KEY).toString(), logBean);
 		return logBean ;
+	}
+	private static MethodExecuteLimitBean createLimitBean(){
+		MethodLimit methodLimit = (MethodLimit) ThreadLocalParams.get(MethodLimitContants.METHOD_LIMIT);
+		
+		MethodExecuteLimitBean limitBean = new MethodExecuteLimitBean(methodLimit.limitWarning(),
+				methodLimit.limitUnavailable(),(Long)ThreadLocalParams.get(MethodLimitContants.METHOD_LIMIT_START_SECENDS));
+ 		methodLimitCache.put(ThreadLocalParams.get(MethodLimitContants.METHOD_LOG_LIMIT_KEY).toString(), limitBean);
+		return limitBean;
 	}
  	/**
 	 * 1.记录方法开始的时间
@@ -71,24 +87,28 @@ public class MethodLimitSolve {
  	 * @throws ExecutionException 
 	 */
  	public void before(JoinPoint joinPoint  ) throws ExecutionException{
-   		if(doMethodLimitSolve){
-    		HoldDoubleValue<Boolean, Method> canDoMethodLimitValue = getCanDoMethodLimit(joinPoint);
+    	if(doMethodLimitSolve){
+   			HoldThirdValue<Boolean, Method,MethodLimit> canDoMethodLimitValue = getCanDoMethodLimit(joinPoint);
    			Method method = canDoMethodLimitValue.b ;
   			if(canDoMethodLimitValue.a){
-  				ThreadLocalParams.add(MethodLimitContants.METHOD_START_TIME , System.currentTimeMillis());
-  				String logKey = getMD5MethodLimitLogCode(method.toGenericString());
-  				ThreadLocalParams.add(MethodLimitContants.METHOD_TIME_KEY, logKey);
+  				//方法日志
+  				long currentTime = System.currentTimeMillis() ;
+  				ThreadLocalParams.add(MethodLimitContants.METHOD_START_TIME , currentTime);
+  				String logKey = getMD5MethodLimitLogKey(method.toGenericString(),currentTime);
+  				ThreadLocalParams.add(MethodLimitContants.METHOD_LOG_TIME_KEY, logKey);
   				ThreadLocalParams.add(MethodLimitContants.METHOD_SIGN, method.toGenericString());
+  				ThreadLocalParams.add(MethodLimitContants.METHOD_LIMIT, canDoMethodLimitValue.c);
+  				ThreadLocalParams.add(MethodLimitContants.METHOD_LIMIT_START_SECENDS, currentTime / 1000 );
 				MethodExecuteLogBean logBean = methodLimitLogCache.get(logKey)  ;
 				logBean.addCountExecute();
-     		}else{
-     			logger.error(joinPoint+"");
-      			System.err.println("herere");
-     		}
-  		}else{
-  			System.err.println("herere");
-  		}
-  	}
+				//方法限制
+  				String limitKey = getMD5MethodLimitKey(method.toGenericString(),currentTime);
+  				ThreadLocalParams.add(MethodLimitContants.METHOD_LOG_LIMIT_KEY, logKey);
+  				MethodExecuteLimitBean limitBean = methodLimitCache.get(limitKey)  ;
+				limitBean.addQps();
+     		} 
+  		} 
+   	}
 		
 
  
@@ -96,10 +116,20 @@ public class MethodLimitSolve {
  	 * 1.为了节省空间采用(IP_MethodSign_Time)生产Code作为一个KEY
  	 * @return
  	 */
- 	private String getMD5MethodLimitLogCode(String methodSign){
+ 	private static String getMD5MethodLimitLogKey(String methodSign,long currentTime){
   		String requestIpAdderss = ThreadLocalParams.get(MethodLimitContants.IP).toString();
  		StringBuilder sbuilder = new StringBuilder(requestIpAdderss);
- 		sbuilder.append("_").append(methodSign).append(System.currentTimeMillis()/(logSummaryMill));
+ 		sbuilder.append("_").append(methodSign).append(currentTime/(logSummaryMill));
+ 		return Utils.MD5(sbuilder.toString());
+ 	}
+ 	/**
+ 	 * 1.为了节省空间采用(IP_MethodSign_Time)生产Code作为一个KEY
+ 	 * @return
+ 	 */
+ 	private static String getMD5MethodLimitKey(String methodSign , long currentTime){
+  		String requestIpAdderss = ThreadLocalParams.get(MethodLimitContants.IP).toString();
+ 		StringBuilder sbuilder = new StringBuilder(requestIpAdderss);
+ 		sbuilder.append("_").append(methodSign).append(currentTime/(1000));
  		return Utils.MD5(sbuilder.toString());
  	}
  	/**
@@ -126,19 +156,21 @@ public class MethodLimitSolve {
  	 * @param joinPoint
  	 * @return
  	 */
- 	private HoldDoubleValue<Boolean, Method> getCanDoMethodLimit(JoinPoint joinPoint){
+ 	private HoldThirdValue<Boolean, Method,MethodLimit> getCanDoMethodLimit(JoinPoint joinPoint){
  		Boolean isDoCanLimit = false ; 
  		MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();  
  		Method method = methodSignature.getMethod();
- 		MethodLimit annotation =	method.getAnnotation(MethodLimit.class);
- 		if(annotation == null){
-  	 		Annotation[] classAnnotations = joinPoint.getTarget().getClass().getAnnotations();
+ 		MethodLimit methodLimit = method.getAnnotation(MethodLimit.class);  //优先读取方法上面的设置
+ 		if(methodLimit == null){
+ 			Class<?> clazz = joinPoint.getTarget().getClass();
+  	 		Annotation[] classAnnotations = clazz.getAnnotations();
  	 		String  annotations = Arrays.asList(classAnnotations).toString();
  	 		isDoCanLimit = annotations.indexOf("RestController") > -1 || annotations.indexOf("Controller")> -1 ;
+ 	 		methodLimit = clazz.getAnnotation(MethodLimit.class);
  		}else{
  			isDoCanLimit = true ;
  		}
- 		return new HoldDoubleValue<Boolean, Method>(isDoCanLimit, method) ;
+ 		return new HoldThirdValue<Boolean, Method, MethodLimit>(isDoCanLimit, method,methodLimit) ;
  	}
   	/**
  	 * 方法执行完,马上执行如果报错，就从报错点结束->然后执行他
@@ -146,12 +178,11 @@ public class MethodLimitSolve {
  	 * @param joinPoint
  	 */
 	public void after(JoinPoint joinPoint){
-		
- 	}
+  	}
  	//方法正常执行  && return 
 	public void afterReturning(JoinPoint joinPoint) throws ExecutionException{
 		if(doMethodLimitSolve){
-			Object logKey = ThreadLocalParams.get(MethodLimitContants.METHOD_TIME_KEY);
+			Object logKey = ThreadLocalParams.get(MethodLimitContants.METHOD_LOG_TIME_KEY);
 			if(null != logKey){
 				MethodExecuteLogBean logBean = methodLimitLogCache.get(logKey.toString());
 				if(null != logBean && null != logBean.getMethodSign()){
@@ -166,7 +197,7 @@ public class MethodLimitSolve {
 	//方法执行报错的情况
 	public void handException(JoinPoint joinPoint , Exception e) throws ExecutionException{
 		if(doMethodLimitSolve){
-			Object logKey = ThreadLocalParams.get(MethodLimitContants.METHOD_TIME_KEY);
+			Object logKey = ThreadLocalParams.get(MethodLimitContants.METHOD_LOG_TIME_KEY);
 			if(null != logKey){
 				MethodExecuteLogBean logBean = methodLimitLogCache.get(logKey.toString());
 				if(null != logBean && null != logBean.getMethodSign()){

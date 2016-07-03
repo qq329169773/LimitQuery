@@ -37,7 +37,7 @@ public class MethodExecuteLogBean {
  				+",countExecute:"+countExecute
  				+",minTimeMethodExecute:"+minTimeMethodExecute
  				+",maxTimeMethodExecute:"+maxTimeMethodExecute
- 				+",totalTimeMethodExecute:"+avgTimeMethodExecute
+ 				+",totalTimeMethodExecute:"+(avgTimeMethodExecute / countExecute.get())
  				+",countExecuteSucess:"+countExecuteSucess
  				+",countExecuteFailed:"+countExecuteFailed
  			+"}";
