@@ -18,21 +18,27 @@ public class HandMethodExecuteResult {
 	@Autowired
 	@Qualifier("printHandleMethodExecuteLog")
 	private HandleMethodExecuteLogIface handleMethodExecuteLog ;
-	
+	private static long total = 0 ;
+
 	//Seconds Minutes Hours DayofMonth Month DayofWeek 
- 	@Scheduled(cron = "*/5 * * * * ?")
+ 	@Scheduled(cron = "*/4 * * * * ?")
 	public void timerHandMethodExcuteLog(){
- 		Map<String, MethodExecuteLogBean> datas = MethodLimitSolve.methodLimitLogCache.asMap();
-		Iterator<Entry<String, MethodExecuteLogBean>> it = datas.entrySet().iterator();
-		while(it.hasNext()){
-			Entry<String, MethodExecuteLogBean> entry = it.next();
-			MethodExecuteLogBean bean = entry.getValue();
-			long currentTime = System.currentTimeMillis();
- 			if(bean.getEndTime()  <=  currentTime
-					&& bean.getCountExecute().get() == (bean.getCountExecuteFailed().get() + bean.getCountExecuteSucess().get())){
- 				datas.remove(entry.getKey());
- 				handleMethodExecuteLog.handMethodExecuteLog(bean);
-  			}
-		}
+		System.out.println("------------------" +(total)  );
+			Map<String, MethodExecuteLogBean> datas = MethodLimitSolve.methodLimitLogCache.asMap();
+			Iterator<Entry<String, MethodExecuteLogBean>> it = datas.entrySet().iterator();
+			while(it.hasNext()){
+				Entry<String, MethodExecuteLogBean> entry = it.next();
+				MethodExecuteLogBean bean = entry.getValue();
+				long currentTime = System.currentTimeMillis();
+				synchronized (bean) {
+					if(bean.getEndTime()  <  currentTime + 1000
+							&& bean.getCountExecute().get() == (bean.getCountExecuteFailed().get() + bean.getCountExecuteSucess().get())){
+		 				datas.remove(entry.getKey());
+		 				total += bean.getCountExecute().get();
+		 				handleMethodExecuteLog.handMethodExecuteLog(bean);
+		  			}
+				}
+	 			
+			}
 	}
 }

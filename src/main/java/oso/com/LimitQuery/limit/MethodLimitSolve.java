@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,6 +28,7 @@ import oso.com.LimitQuery.bean.MethodExecuteLimitBean;
 import oso.com.LimitQuery.bean.MethodExecuteLogBean;
 import oso.com.LimitQuery.holdValue.HoldDoubleValue;
 import oso.com.LimitQuery.iface.HandRemovalNotificationIface;
+import oso.com.LimitQuery.iface.impl.PrintHandleMethodExecuteLog;
 import oso.com.LimitQuery.utils.CacheUtils;
 import oso.com.LimitQuery.utils.Utils;
  
@@ -33,9 +36,12 @@ import oso.com.LimitQuery.utils.Utils;
 //报错的执行before->(执行代码throw处)->after->handException
 public class MethodLimitSolve {
  	
-	public static int logSummaryMill  = 1000 * 30  ;			//日志1分钟统计一次
 	
-	private boolean doMethodLimitSolve = true  ;
+	private static Logger logger = LoggerFactory.getLogger(MethodLimitSolve.class);
+
+	public static int logSummaryMill  = 1000 * 1  ;			//日志1分钟统计一次
+	
+ 	private boolean doMethodLimitSolve = true  ;
 
 	//public static Map<String,MethodExecuteLogBean> methodLimitLogCache = new HashMap<String,MethodExecuteLogBean>();
 	
@@ -75,7 +81,12 @@ public class MethodLimitSolve {
   				ThreadLocalParams.add(MethodLimitContants.METHOD_SIGN, method.toGenericString());
 				MethodExecuteLogBean logBean = methodLimitLogCache.get(logKey)  ;
 				logBean.addCountExecute();
+     		}else{
+     			logger.error(joinPoint+"");
+      			System.err.println("herere");
      		}
+  		}else{
+  			System.err.println("herere");
   		}
   	}
 		

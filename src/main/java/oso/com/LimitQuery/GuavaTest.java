@@ -2,13 +2,13 @@ package oso.com.LimitQuery;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.MessageDigest;
-import java.util.Date;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
@@ -16,9 +16,8 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-import com.google.common.util.concurrent.RateLimiter;
 public class GuavaTest {
-
+	
 	/**
 	 * @param args
 	 * @throws InterruptedException
@@ -27,7 +26,7 @@ public class GuavaTest {
 	 */
 	public static void main(String[] args) throws InterruptedException, ExecutionException, UnknownHostException {
 		//rateLimiterTest();
- 		 LoadingCache<Long, AtomicLong> counter =
+ 		LoadingCache<Long, AtomicLong> counter =
 		        CacheBuilder.newBuilder()
 		        .ticker(new Ticker() {
 					@Override
