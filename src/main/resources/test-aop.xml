@@ -10,12 +10,12 @@
        http://www.springframework.org/schema/aop
        http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
        
-	<bean id="methodLimitSolve" class="oso.com.LimitQuery.limit.MethodLimitSolve"></bean> 
+	<bean id="methodLimitSolve" class="com.jd.MethodLimit.limit.MethodLimitSolve"></bean> 
 	 
 	 <aop:config>
 	 
  	 	<aop:aspect ref="methodLimitSolve">
-	 	 	<aop:pointcut expression="execution(* oso.com.LimitQuery.*.*(..))" id="methodLimitPointcut"/>
+	 	 	<aop:pointcut expression="execution(* com.jd.MethodLimit.*.*(..))" id="methodLimitPointcut"/>
 	 		<aop:before method="before"  pointcut-ref="methodLimitPointcut" />
 	 		<aop:after method="after" pointcut-ref="methodLimitPointcut"	/>
 	 		<aop:after-returning method="afterReturning" pointcut-ref="methodLimitPointcut"/>
