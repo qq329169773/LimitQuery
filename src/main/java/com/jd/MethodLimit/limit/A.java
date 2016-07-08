@@ -2,6 +2,7 @@ package com.jd.MethodLimit.limit;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 漏桶算法实现
@@ -42,7 +43,7 @@ class LimitBuck {
 			return ;
 		}else{
 			if(initTimeSeconds != (currentTime / 1000)){
-				//说明已经不是之前的那一秒钟]
+				//说明已经不是之前的那一秒钟
  				 clearn(currentTime);
 			}
 			addTokenTimes++ ;
@@ -86,13 +87,32 @@ class TokenClient implements Runnable{
 	
 	
 }
+class AddInter implements Runnable{
+	
+	AtomicInteger data ; 
+ 	
+	public AddInter(AtomicInteger data){
+		this.data = data ;
+	}
+	
+	@Override
+	public void run() {
+		System.out.println(data.incrementAndGet());
+	}
+}
 public class A {
 
 	
 	public static void main(String[] args) throws InterruptedException {
-		LimitBuck limitBuck = LimitBuck.initLimitBuck(800, 300);
+	/*	LimitBuck limitBuck = LimitBuck.initLimitBuck(800, 300);
 		for(int index = 0 ; index < 1000 ;  index++ ){
 			new Thread(new TokenClient(limitBuck)).start();
+		}*/
+		AtomicInteger data =  new AtomicInteger(0) ;
+		for(int index = 0 ; index < 10 ; index++){
+			new Thread(new AddInter(data)).start();
 		}
+		TimeUnit.SECONDS.sleep(10);
+		System.out.println(data);
 	}
 }

@@ -12,7 +12,7 @@ import com.jd.MethodLimit.OrderServers;
 
 class MethodExe implements Runnable{
 	OrderServers orderServers1 = null ;
- 	
+ 	private static Random random = new Random();
 	public MethodExe(OrderServers orderServers1) {
 		super();
 		this.orderServers1 = orderServers1;
@@ -21,10 +21,10 @@ class MethodExe implements Runnable{
 
 	@Override
 	public void run() {
-		ThreadLocalParams.add(MethodLimitContants.IP, "127.0.0.1"+ new Random().nextInt(10));
+		ThreadLocalParams.add(MethodLimitContants.IP, "127.0.0.1"+ random.nextInt(2));
 	 
 
-		switch (new Random().nextInt(23)) {
+		switch (random.nextInt(2)+8) {
 			case 0: orderServers1.addOrder1(); break;
 			case 1: orderServers1.addOrder1(); break;
 			case 2: orderServers1.addOrder2(); break;
@@ -61,15 +61,13 @@ public class ATest {
 		ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext("/applicationContext.xml");
 		final OrderServers orderServers = appContext.getBean(OrderServers.class);
 		 
+		System.out.println("ALl Thread Start " + System.currentTimeMillis());
 		for(int index = 0 ; index < 300 ; index++){
  			new Thread(new MethodExe(orderServers)).start();
  		}
 	 	for(int index = 0 ; index < 100000 ; index++){
  			new Thread(new MethodExe(orderServers)).start();
  		}
-		/*for(int index = 0 ; index < 100000 ; index++){
- 			new Thread(new MethodExe(orderServers)).start();
- 		}
 		for(int index = 0 ; index < 100000 ; index++){
  			new Thread(new MethodExe(orderServers)).start();
  		}
@@ -90,9 +88,12 @@ public class ATest {
  		}
 		for(int index = 0 ; index < 100000 ; index++){
  			new Thread(new MethodExe(orderServers)).start();
- 		}*/
+ 		}
+		for(int index = 0 ; index < 100000 ; index++){
+ 			new Thread(new MethodExe(orderServers)).start();
+ 		}
 		
-		System.err.println("ALL Thread Started........................");
+		System.out.println("ALl Thread End " + System.currentTimeMillis());
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
   	}
 }

@@ -20,9 +20,9 @@ public class MethodExecuteLogBean {
 	private AtomicLong countExecuteSucess = new AtomicLong(0); 	//某个时间段执行成功次数
 	private AtomicLong countExeuceteLimit = new AtomicLong(0);	//某个时间段因为限流导致执行失败次数
 	private AtomicLong countExecute = new AtomicLong(0);			//某个时间段总共执行了多少次
-	private long avgTimeMethodExecute ;	//在某个时间段方法执行的时间(avg)
-	private long maxTimeMethodExecute ;	//最长执行时间
-	private long minTimeMethodExecute ;	//最短执行时间
+	private int avgTimeMethodExecute ;	//在某个时间段方法执行的时间(avg)
+	private int maxTimeMethodExecute ;	//最长执行时间
+	private int minTimeMethodExecute ;	//最短执行时间
 	private long startTime  ;
 	private long endTime ;
 	
@@ -43,7 +43,7 @@ public class MethodExecuteLogBean {
  			+"}";
 	}
 	
-	public synchronized void appendMethodExecuteTime(long durationTime){
+	public synchronized void appendMethodExecuteTime(int durationTime){
 		if(durationTime > maxTimeMethodExecute){
 			maxTimeMethodExecute = durationTime ;
 		}
@@ -87,7 +87,7 @@ public class MethodExecuteLogBean {
 	public long getAvgTimeMethodExecute() {
 		return avgTimeMethodExecute;
 	}
-	public void setAvgTimeMethodExecute(long avgTimeMethodExecute) {
+	public void setAvgTimeMethodExecute(int avgTimeMethodExecute) {
 		this.avgTimeMethodExecute = avgTimeMethodExecute;
 	}
 	public long getMaxTimeMethodExecute() {

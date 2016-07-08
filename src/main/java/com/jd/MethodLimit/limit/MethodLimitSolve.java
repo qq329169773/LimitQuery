@@ -20,7 +20,7 @@ import com.jd.MethodLimit.util.Utils;
 //报错的执行before->(执行代码throw处)->after->handException
 public class MethodLimitSolve {
  
-	public static int logSummaryMill  = 1000 * 15  ;			//日志1分钟统计一次
+	public static int logSummaryMill  = 1000 * 30  ;			//日志1分钟统计一次
 	
  	private boolean doMethodLimitSolve = true  ;
 
@@ -170,7 +170,7 @@ public class MethodLimitSolve {
 				MethodExecuteLogBean logBean = methodLimitLogCache.get(logKey.toString());
 				if(null != logBean && null != logBean.getMethodSign()){
 					long start = Long.parseLong(ThreadLocalParams.get(MethodLimitContants.METHOD_START_TIME).toString());
-					long durationTime = System.currentTimeMillis() - start ;
+					int durationTime = (int)(System.currentTimeMillis() - start) ;
  					logBean.appendMethodExecuteTime(durationTime);
  					logBean.addCountExecuteSucess();
 				}
@@ -185,7 +185,7 @@ public class MethodLimitSolve {
 				MethodExecuteLogBean logBean = methodLimitLogCache.get(logKey.toString());
 				if(null != logBean && null != logBean.getMethodSign()){
 					long start = Long.parseLong(ThreadLocalParams.get(MethodLimitContants.METHOD_START_TIME).toString());
-					long durationTime = System.currentTimeMillis() - start ;
+					int durationTime =(int)(System.currentTimeMillis() - start);
  					logBean.addcountExecuteFailed();
  					logBean.appendMethodExecuteTime(durationTime);
 				}

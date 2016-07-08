@@ -37,6 +37,8 @@ public class HoldDoubleValue<A,B> {
 	}
 	
 	public static void main(String[] args) {
+		
+		
 		Logger logger = Logger.getLogger("method_request_log");
 		for(int index = 0 ; index < 100000 ; index++ ){
 			logger.info(new MethodExecuteLogBean());
@@ -45,7 +47,6 @@ public class HoldDoubleValue<A,B> {
 		for(int index = 0 ; index < 100000 ; index++ ){
 			logger2.info(new MethodExecuteLimitBean(1, 1, 2));
 		} 
-		
 		Logger logger1 = Logger.getLogger(HoldDoubleValue.class.getName());
  		logger1.info("test");
 		/*logger.info("343434");
